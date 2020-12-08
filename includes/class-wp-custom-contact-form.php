@@ -117,6 +117,13 @@ class Wp_Custom_Contact_Form {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-wp-custom-contact-form-admin.php';
 
 		/**
+		 * The class responsible for defining WP List Table Functionality
+		 * of the plugin.
+		 */
+		 
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wp-custom-contact-form-table.php';
+
+		/**
 		 * The class responsible for defining all actions that occur in the public-facing
 		 * side of the site.
 		 */

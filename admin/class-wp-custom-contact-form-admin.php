@@ -110,16 +110,20 @@ class Wp_Custom_Contact_Form_Admin {
 			__( 'WP Custom Contact Form', 'wp-custom-contact-form' ),
 			'manage_options',
 			'wp-custom-contact-form-entries',
-			array( $this, 'wp_custom_contact_form_entries' ),
+			array( $this, 'wp_custom_contact_form_list' ),
 		);
 	}
 
 	/**
-	 * Display Contact Form Entry
-	 * @since    1.0.0
+	* Show Admin menu page contents
+	*
+	* @since    1.0.0
 	*/
 	 
-	public function wp_custom_contact_form_entries() {
+	public function wp_custom_contact_form_list() {
+		
+		$contact_form_list_table = new Wp_Custom_Contact_Form_Table();
+		echo 'hii123';die();
 		
 	}
 
