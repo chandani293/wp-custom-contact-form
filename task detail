@@ -1,0 +1,7 @@
+Plugin Use Boilerplate
+
+- create form. shortcode.
+- 1. first name, last name, email, phone number, comment , submit button field.
+- data submit using ajax create custom table and store in custom table. show in backend table wp-list table.
+- form js and php validate.
+- backend delete,search,entry per page,edit, all functinality using ajax.

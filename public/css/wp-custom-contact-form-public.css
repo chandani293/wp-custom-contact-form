@@ -1,0 +1,14 @@
+/**
+ * All of the CSS for your public-facing functionality should be
+ * included in this file.
+ */
+ 
+.wp-custom-contact-form-main .error{
+	color:red !important;
+} 
+.wp-custom-contact-form-success-msg{
+	border:2px solid green;
+}
+.wp-custom-contact-form-error-msg{
+	border:2px solid red;
+}
