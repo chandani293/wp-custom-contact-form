@@ -6,8 +6,8 @@
  * @subpackage Wp_Custom_Contact_Form/includes
  */
 
-if( is_admin() && !class_exists( 'WP_List_Table' ) ){
-    require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
+if(!class_exists( 'WP_List_Table' ) ){
+    require ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
 }
 
 /**
@@ -15,36 +15,15 @@ if( is_admin() && !class_exists( 'WP_List_Table' ) ){
  */ 
 class Wp_Custom_Contact_Form_Table extends WP_List_Table {
 
-	/** Class constructor */
+	/** class constructor */
 	public function __construct() {
 
 		parent::__construct( [
-			'singular' => __( 'Customer', 'sp' ), //singular name of the listed records
-			'plural'   => __( 'Customers', 'sp' ), //plural name of the listed records
+			'singular' => __( 'customer', 'wp-custom-contact-form' ), //singular name of the listed records
+			'plural'   => __( 'customers', 'wp-custom-contact-form' ), //plural name of the listed records
 			'ajax'     => false //should this table support ajax?
 
 		] );
-	}
-
-	/**
-	 * Retrieve customer’s data from the database
-	 *
-	 * @param int $per_page
-	 * @param int $page_number
-	 *
-	 * @return mixed
-	 */
-	public static function get_customers( $per_page = 5, $page_number = 1 ) {
-	  global $wpdb;
-	  $sql = "SELECT * FROM {$wpdb->prefix}customers";
-	  if ( ! empty( $_REQUEST['orderby'] ) ) {
-		$sql .= ' ORDER BY ' . esc_sql( $_REQUEST['orderby'] );
-		$sql .= ! empty( $_REQUEST['order'] ) ? ' ' . esc_sql( $_REQUEST['order'] ) : ' ASC';
-	  }
-	  $sql .= " LIMIT $per_page";
-	  $sql .= ' OFFSET ' . ( $page_number - 1 ) * $per_page;
-	  $result = $wpdb->get_results( $sql, 'ARRAY_A' );
-	  return $result;
 	}
 	
 	/**
@@ -54,128 +33,140 @@ class Wp_Custom_Contact_Form_Table extends WP_List_Table {
 	 */
 	public static function delete_customer( $id ) {
 	  global $wpdb;
-
 	  $wpdb->delete(
-		"{$wpdb->prefix}customers",
+		"{$wpdb->prefix}custom_contact_form`",
 		[ 'ID' => $id ],
 		[ '%d' ]
 	  );
 	}
-	
-	/**
-	 * Returns the count of records in the database.
-	 *
-	 * @return null|string
-	 */
-	public static function record_count() {
-	  global $wpdb;
 
-	  $sql = "SELECT COUNT(*) FROM {$wpdb->prefix}customers";
-
-	  return $wpdb->get_var( $sql );
-	}
-	
-	/** Text displayed when no customer data is available */
-	public function no_items() {
-	  _e( 'No customers avaliable.', 'sp' );
-	}
 	
 	/**
-	 * Method for name column
-	 *
-	 * @param array $item an array of DB data
-	 *
-	 * @return string
-	 */
-	 
-	function column_name( $item ) {
-		  // create a nonce
-		  $delete_nonce = wp_create_nonce( 'sp_delete_customer' );
-
-		  $title = '<strong>' . $item['name'] . '</strong>';
-		  $actions = [
-			'delete' => sprintf( '<a href="?page=%s&action=%s&customer=%s&_wpnonce=%s">Delete</a>', esc_attr( $_REQUEST['page'] ), 'delete', absint( $item['ID'] ), $delete_nonce )
-		  ];
-		  
-		  return $title . $this->row_actions( $actions );
-	}
-	
-	/**
-	 * Render a column when no column specific method exists.
-	 *
-	 * @param array $item
-	 * @param string $column_name
-	 *
-	 * @return mixed
-	 */
-	 
-	 public function column_default( $item, $column_name ) {
-	  switch ( $column_name ) {
-		case 'address':
-		case 'city':
-		  return $item[ $column_name ];
-		default:
-		  return print_r( $item, true ); //Show the whole array for troubleshooting purposes
-	  }
-	}
-	
-	/**
-	 * Render the bulk edit checkbox
-	 *
-	 * @param array $item
-	 *
-	 * @return string
-	 */
-	 
-	function column_cb( $item ) {
-	  return sprintf(
-		'<input type="checkbox" name="bulk-delete[]" value="%s" />', $item['ID']
-	  );
-	}
-	
-	/**
-	 *  Associative array of columns
-	 *
-	 * @return array
-	 */
-	function get_columns() {
-	  $columns = [
-		'cb'      => '<input type="checkbox" />',
-		'name'    => __( 'Name', 'sp' ),
-		'address' => __( 'Address', 'sp' ),
-		'city'    => __( 'City', 'sp' )
-	  ];
-
-	  return $columns;
-	}
-	
-	/**
-	 * Columns to make sortable.
-	 *
-	 * @return array
-	 */
-	public function get_sortable_columns() {
-	  $sortable_columns = array(
-		'name' => array( 'name', true ),
-		'city' => array( 'city', false )
-	  );
-
-	  return $sortable_columns;
-	}
-	
-	/**
-	 * Returns an associative array containing the bulk action
-	 *
-	 * @return array
-	 */
-	 
-	public function get_bulk_actions() {
-	  $actions = [
-		'bulk-delete' => 'Delete'
-	  ];
-
-	  return $actions;
-	}
+     * Prepare the items for the table to process
+     *
+     * @return Void
+     */
+    public function prepare_items()
+    {
+        $columns = $this->get_columns();
+        $hidden = $this->get_hidden_columns();
+        $sortable = $this->get_sortable_columns();
 		
+		$search_term = isset($_POST['s']) ? trim($_POST['s']): "";
+		$orderby = isset($_GET['orderby'])? trim($_GET['orderby']):"";
+		$order = isset($_GET['order'])? trim($_GET['order']):"";
+		
+        $data = $this->table_data($orderby,$order,$search_term);
+
+        $per_page = 3;
+        $currentpage = $this->get_pagenum();//Get Current Page Number
+        $totalItems = count($data);
+
+        $this->set_pagination_args( array(
+            'total_items' => $totalItems,
+            'per_page'    => $per_page
+        ) );
+
+        $data = array_slice($data,(($currentpage-1)*$per_page),$per_page);
+
+        $this->_column_headers = array($columns, $hidden, $sortable);
+        $this->items = $data;
+    }
+
+    /**
+     * Override the parent columns method. Defines the columns to use in your listing table
+     *
+     * @return Array
+     */
+    public function get_columns() //$item
+    {
+        $columns = array(
+            'id'           => 'ID',
+            'firstname'    => 'First Name',
+            'lastname'     => 'Last Name',
+            'email'        => 'Email',
+            'contact_no'   => 'Contact No',
+            'message'      => 'Message',
+			//'edit'         => sprintf('<a href="?page=%s&action=%s&book=%s">Edit</a>',$_REQUEST['page'],'edit',$item['id']),
+            //'delete'       => sprintf('<a href="?page=%s&action=%s&book=%s">Delete</a>',$_REQUEST['page'],'delete',$item['id']),
+        );
+
+        return $columns;
+    }
+
+    /**
+     * Define which columns are hidden
+     *
+     * @return Array
+     */
+    public function get_hidden_columns()
+    {
+        return array();
+    }
+
+    /**
+     * Define the sortable columns
+     *
+     * @return Array
+     */
+    public function get_sortable_columns()
+    {
+        return array(
+			'firstname' => array('firstname', true),
+		);
+    }
+
+    /**
+     * Get the table data
+     *
+     * @return Array
+     */
+    private function table_data($orderby='',$order='',$search_term='')
+    {
+		global $wpdb;
+		
+		if(!empty($search_term)){
+			 $sql = "SELECT * FROM {$wpdb->prefix}custom_contact_form where `firstname` LIKE '%$search_term%' OR `lastname` LIKE '%$search_term%' OR `email` LIKE '%$search_term%' OR `message` LIKE '%$search_term%'";
+			 $data = $wpdb->get_results($sql , 'ARRAY_A');
+		}
+		else{
+			if($orderby == 'firstname' && $order == 'asc'){
+				$sql = "SELECT * FROM {$wpdb->prefix}custom_contact_form ORDER BY `firstname` ASC";
+				$data = $wpdb->get_results( $sql, 'ARRAY_A' );
+			}else if($orderby =='firstname' && $order == 'desc'){
+				$sql = "SELECT * FROM {$wpdb->prefix}custom_contact_form ORDER BY `firstname` DESC";
+				$data = $wpdb->get_results( $sql, 'ARRAY_A' );
+			}else{
+				$sql = "SELECT * FROM {$wpdb->prefix}custom_contact_form";
+				$data = $wpdb->get_results( $sql, 'ARRAY_A' );
+			}
+		}
+		return $data;
+	
+    }
+
+    /**
+     * Define what data to show on each column of the table
+     *
+     * @param  Array $item        Data
+     * @param  String $column_name - Current column name
+     *
+     * @return Mixed
+     */
+    public function column_default( $item, $column_name )
+    {
+        switch( $column_name ) {
+            case 'id':
+            case 'firstname':
+            case 'lastname':
+            case 'email':
+            case 'contact_no':
+            case 'message':
+                return $item[ $column_name ];
+
+            default:
+                return print_r( $item, true ) ;
+        }
+    }
 }
 ?>

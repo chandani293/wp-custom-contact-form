@@ -145,9 +145,9 @@ class Wp_Custom_Contact_Form {
 	private function set_locale() {
 
 		$plugin_i18n = new Wp_Custom_Contact_Form_i18n();
-
+   
 		$this->loader->add_action( 'plugins_loaded', $plugin_i18n, 'load_plugin_textdomain' );
-
+		 
 	}
 
 	/**

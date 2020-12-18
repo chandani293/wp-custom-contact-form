@@ -105,6 +105,7 @@ class Wp_Custom_Contact_Form_Admin {
 	 * @since    1.0.0
 	 */
 	public function wp_custom_contact_create_admin_menu() {
+		
 		add_menu_page(
 			__( 'WP Custom Contact Form', 'wp-custom-contact-form' ),
 			__( 'WP Custom Contact Form', 'wp-custom-contact-form' ),
@@ -112,6 +113,8 @@ class Wp_Custom_Contact_Form_Admin {
 			'wp-custom-contact-form-entries',
 			array( $this, 'wp_custom_contact_form_list' ),
 		);
+		
+		
 	}
 
 	/**
@@ -123,8 +126,12 @@ class Wp_Custom_Contact_Form_Admin {
 	public function wp_custom_contact_form_list() {
 		
 		$contact_form_list_table = new Wp_Custom_Contact_Form_Table();
-		echo 'hii123';die();
-		
+		echo '<h2>Contact Form List</h2>';
+		$contact_form_list_table->prepare_items();
+		$contact_form_list_table->display(); 
+		echo "<form method='post' name='frm_search_post' action='".$_SERVER['PHP_SELF']."?page=wp-custom-contact-form-entries'>";
+		$contact_form_list_table->search_box("Search Data","search_post_id");
+		echo "</form>";
 	}
 
 }
