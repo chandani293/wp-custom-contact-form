@@ -14,32 +14,29 @@ if(!class_exists( 'WP_List_Table' ) ){
  * Create a new table class that will extend the WP_List_Table
  */ 
 class Wp_Custom_Contact_Form_Table extends WP_List_Table {
-
-	/** class constructor */
-	public function __construct() {
-
-		parent::__construct( [
-			'singular' => __( 'customer', 'wp-custom-contact-form' ), //singular name of the listed records
-			'plural'   => __( 'customers', 'wp-custom-contact-form' ), //plural name of the listed records
-			'ajax'     => false //should this table support ajax?
-
-		] );
-	}
 	
-	/**
-	 * Delete a customer record.
-	 *
-	 * @param int $id customer ID
-	 */
-	public static function delete_customer( $id ) {
-	  global $wpdb;
-	  $wpdb->delete(
-		"{$wpdb->prefix}custom_contact_form`",
-		[ 'ID' => $id ],
-		[ '%d' ]
-	  );
-	}
+	public function __construct() {
+		
+        parent::__construct(
+            array(
+                'singular' => 'singular_form',
+                'plural'   => 'plural_form',
+                'ajax'     => false
+            )
+        );
+    }
 
+	/**
+	 * Delete a record.
+	 *
+	 * @param int $id ID
+	 */
+	public static function delete_data( $id ) {
+	  global $wpdb;
+	  if ( ! empty( $id ) ) {
+		  $wpdb->query( "DELETE FROM {$wpdb->prefix}custom_contact_form WHERE id='".$id."'");
+	  }
+	}
 	
 	/**
      * Prepare the items for the table to process
@@ -56,9 +53,36 @@ class Wp_Custom_Contact_Form_Table extends WP_List_Table {
 		$orderby = isset($_GET['orderby'])? trim($_GET['orderby']):"";
 		$order = isset($_GET['order'])? trim($_GET['order']):"";
 		
+		
+		if ($_GET['action'] == 'wp-custom-contact-form-delete' ) {
+			$delete_id = $_GET['post_id'];
+			$this->delete_data( $delete_id );
+		}
+		/*else if ($_GET['action'] == 'delete' ) {
+			//$entry_id = ( is_array( $_REQUEST['entry'] ) ) ? $_REQUEST['entry'] : array( $_REQUEST['entry'] );
+			echo 'test:'.$_REQUEST['action'];
+			$delete_entry = esc_attr( sanitize_text_field( wp_unslash( $_POST['wp-custom-contact-form-entries'] ) ) );
+				$this->delete_entry( $delete_entry );
+				echo $delete_entry;
+			//$delete_id = $_GET['post_id'];
+			//$this->delete_data( $delete_id );
+		}*/
+
         $data = $this->table_data($orderby,$order,$search_term);
 
-        $per_page = 3;
+		$user = get_current_user_id();
+		$screen = get_current_screen();
+		$option = $screen->get_option('per_page', 'option');
+		
+		$per_page_val = get_user_meta($user, $option, true);
+		
+		
+		 
+		if ( empty ( $per_page) || $per_page < 1 ) {
+			$per_page_val = $screen->get_option( 'per_page', 'default' );
+		}
+		echo 'option:'.$per_page_val;
+        $per_page = $this->get_items_per_page('contact_per_page', 3); //3
         $currentpage = $this->get_pagenum();//Get Current Page Number
         $totalItems = count($data);
 
@@ -71,8 +95,24 @@ class Wp_Custom_Contact_Form_Table extends WP_List_Table {
 
         $this->_column_headers = array($columns, $hidden, $sortable);
         $this->items = $data;
+		$this->process_bulk_action();
+		//paging
+  
     }
 
+	public function process_bulk_action() {
+		//$entry_id = ( is_array( $_REQUEST['entry'] ) ) ? $_REQUEST['entry'] : array( $_REQUEST['entry'] );
+		//Detect when a bulk action is being triggered...
+	  if ( 'delete' == $this->current_action() ) {
+		  echo 'hiihelpp';die();
+			foreach ( $entry_id as $id ) {
+						$id = absint( $id );
+						echo 'test:'.$id;
+						//$wpdb->query( "DELETE FROM $this->entries_table_name WHERE entries_id = $id" );
+					}
+	  }
+	}
+	
     /**
      * Override the parent columns method. Defines the columns to use in your listing table
      *
@@ -81,14 +121,13 @@ class Wp_Custom_Contact_Form_Table extends WP_List_Table {
     public function get_columns() //$item
     {
         $columns = array(
+			'cb'           => '<input type="checkbox" />',
             'id'           => 'ID',
             'firstname'    => 'First Name',
             'lastname'     => 'Last Name',
             'email'        => 'Email',
             'contact_no'   => 'Contact No',
             'message'      => 'Message',
-			//'edit'         => sprintf('<a href="?page=%s&action=%s&book=%s">Edit</a>',$_REQUEST['page'],'edit',$item['id']),
-            //'delete'       => sprintf('<a href="?page=%s&action=%s&book=%s">Delete</a>',$_REQUEST['page'],'delete',$item['id']),
         );
 
         return $columns;
@@ -168,5 +207,41 @@ class Wp_Custom_Contact_Form_Table extends WP_List_Table {
                 return print_r( $item, true ) ;
         }
     }
+	
+	/**
+	 * Get all Actions.
+	 */
+	public function get_bulk_actions() {
+		$actions = array(
+			'delete' => 'Delete',
+		);
+		return $actions;
+	}
+	
+	/**
+	 * Column for checkbox
+	 *
+	 * @param array $item Set Items.
+	 */
+	public function column_cb( $item ) {
+		return sprintf(
+			'<input type="checkbox" id="cb-value-%s" name="checked_value[]" value="%s">',
+			$item['id'],
+			$item['id']
+		);
+	}
+	
+	public function column_firstname($item){
+		$action = array(
+			'delete'=>sprintf("<a href='?page=%s&action=%s&post_id=%s'>Delete</a>",$_GET['page'],'wp-custom-contact-form-delete',$item['id']),
+		);
+		return sprintf('%1$s %2$s',$item['firstname'],$this->row_actions($action));
+	}
+	
+	public function set_screen( $status, $option, $value ) {
+			echo 'hiii:';die();
+			if ( 'contact_per_page' == $option ) return $value;
+	}
+	
 }
 ?>

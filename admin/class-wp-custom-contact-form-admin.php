@@ -106,7 +106,15 @@ class Wp_Custom_Contact_Form_Admin {
 	 */
 	public function wp_custom_contact_create_admin_menu() {
 		
-		add_menu_page(
+		/*add_menu_page(
+			__( 'WP Custom Contact Form', 'wp-custom-contact-form' ),
+			__( 'WP Custom Contact Form', 'wp-custom-contact-form' ),
+			'manage_options',
+			'wp-custom-contact-form-entries',
+			array( $this, 'wp_custom_contact_form_list' ),
+		);*/
+		
+		$hook = add_menu_page(
 			__( 'WP Custom Contact Form', 'wp-custom-contact-form' ),
 			__( 'WP Custom Contact Form', 'wp-custom-contact-form' ),
 			'manage_options',
@@ -114,7 +122,21 @@ class Wp_Custom_Contact_Form_Admin {
 			array( $this, 'wp_custom_contact_form_list' ),
 		);
 		
-		
+		add_action( "load-$hook", 'add_options' );
+
+		function add_options() {
+		  $option = 'per_page';
+		  $args = array(
+				 'label' => 'Number of items per page:',
+				 'default' => 3,
+				 'option' => 'contact_per_page'
+				 );
+		  add_screen_option( $option, $args );
+		}
+		add_filter('set-screen-option', 'set_screen', 10, 3);
+	    //function set_screen( $status, $option, $value ) {
+			//if ( 'contact_per_page' == $option ) return $value;
+		//}
 	}
 
 	/**
@@ -132,6 +154,15 @@ class Wp_Custom_Contact_Form_Admin {
 		echo "<form method='post' name='frm_search_post' action='".$_SERVER['PHP_SELF']."?page=wp-custom-contact-form-entries'>";
 		$contact_form_list_table->search_box("Search Data","search_post_id");
 		echo "</form>";
+		
+		$action = isset($_GET['action']) ? trim($_GET['action']):"";
+	    if($action == 'wp-custom-contact-edit'){
+			$post_id = isset($_GET['post_id'])? trim($_GET['action']):"";
+			include_once plugin_dir_path(_FILE_).'admin//wp-custom-contact-edit.php';
+		}else{
+			$post_id = isset($_GET['post_id'])? trim($_GET['action']):"";
+			//include_once plugin_dir_path(_FILE_).'view/wp-custom-contact-delete.php';
+		}
 	}
 
 }
