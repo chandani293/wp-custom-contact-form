@@ -34,7 +34,7 @@ class Wp_Custom_Contact_Form_Table extends WP_List_Table {
 	public static function delete_data( $id ) {
 	  global $wpdb;
 	  if ( ! empty( $id ) ) {
-		  $wpdb->query( "DELETE FROM {$wpdb->prefix}custom_contact_form WHERE id='".$id."'");
+		  $wpdb->query( "DELETE FROM {$wpdb->prefix}custom_contact_form WHERE id='".$id."'" );
 	  }
 	}
 	
@@ -53,20 +53,10 @@ class Wp_Custom_Contact_Form_Table extends WP_List_Table {
 		$orderby = isset($_GET['orderby'])? trim($_GET['orderby']):"";
 		$order = isset($_GET['order'])? trim($_GET['order']):"";
 		
-		
 		if ($_GET['action'] == 'wp-custom-contact-form-delete' ) {
 			$delete_id = $_GET['post_id'];
 			$this->delete_data( $delete_id );
 		}
-		/*else if ($_GET['action'] == 'delete' ) {
-			//$entry_id = ( is_array( $_REQUEST['entry'] ) ) ? $_REQUEST['entry'] : array( $_REQUEST['entry'] );
-			echo 'test:'.$_REQUEST['action'];
-			$delete_entry = esc_attr( sanitize_text_field( wp_unslash( $_POST['wp-custom-contact-form-entries'] ) ) );
-				$this->delete_entry( $delete_entry );
-				echo $delete_entry;
-			//$delete_id = $_GET['post_id'];
-			//$this->delete_data( $delete_id );
-		}*/
 
         $data = $this->table_data($orderby,$order,$search_term);
 
@@ -74,14 +64,13 @@ class Wp_Custom_Contact_Form_Table extends WP_List_Table {
 		$screen = get_current_screen();
 		$option = $screen->get_option('per_page', 'option');
 		
-		$per_page_val = get_user_meta($user, $option, true);
-		
-		
+		$per_page_val = get_user_meta(	$user, $option, true );
 		 
 		if ( empty ( $per_page) || $per_page < 1 ) {
 			$per_page_val = $screen->get_option( 'per_page', 'default' );
 		}
-		echo 'option:'.$per_page_val;
+	
+		
         $per_page = $this->get_items_per_page('contact_per_page', 3); //3
         $currentpage = $this->get_pagenum();//Get Current Page Number
         $totalItems = count($data);
@@ -96,21 +85,29 @@ class Wp_Custom_Contact_Form_Table extends WP_List_Table {
         $this->_column_headers = array($columns, $hidden, $sortable);
         $this->items = $data;
 		$this->process_bulk_action();
-		//paging
-  
+		
     }
+	
 
+	/**
+     * Define which Process Bulk Action
+     *
+     */
 	public function process_bulk_action() {
-		//$entry_id = ( is_array( $_REQUEST['entry'] ) ) ? $_REQUEST['entry'] : array( $_REQUEST['entry'] );
-		//Detect when a bulk action is being triggered...
-	  if ( 'delete' == $this->current_action() ) {
-		  echo 'hiihelpp';die();
+		$entry_id = ( is_array( $_REQUEST['checked_value'] ) ) ? $_REQUEST['checked_value'] : array( $_REQUEST['checked_value'] );
+		global $wpdb;
+		
+		$action = $this->current_action();
+		if( 'delete' === $action ) {
 			foreach ( $entry_id as $id ) {
-						$id = absint( $id );
-						echo 'test:'.$id;
-						//$wpdb->query( "DELETE FROM $this->entries_table_name WHERE entries_id = $id" );
-					}
-	  }
+				$id = absint( $id );
+				$wpdb->query( "DELETE FROM wp_custom_contact_form WHERE id=".$id."" );
+			}
+			
+			echo '<div class="notice notice-success is-dismissible"><p>Bulk Deleted..</p></div>';
+			//wp_redirect( admin_url() );
+		}
+		
 	}
 	
     /**
@@ -160,7 +157,7 @@ class Wp_Custom_Contact_Form_Table extends WP_List_Table {
      *
      * @return Array
      */
-    private function table_data($orderby='',$order='',$search_term='')
+    private function table_data( $orderby='',$order='',$search_term='' )
     {
 		global $wpdb;
 		
@@ -187,7 +184,7 @@ class Wp_Custom_Contact_Form_Table extends WP_List_Table {
     /**
      * Define what data to show on each column of the table
      *
-     * @param  Array $item        Data
+     * @param  Array $item Data
      * @param  String $column_name - Current column name
      *
      * @return Mixed
@@ -231,17 +228,16 @@ class Wp_Custom_Contact_Form_Table extends WP_List_Table {
 		);
 	}
 	
+	/**
+	 * Column for First Name
+	 *
+	 * @param array $item Set Items.
+	 */
 	public function column_firstname($item){
 		$action = array(
 			'delete'=>sprintf("<a href='?page=%s&action=%s&post_id=%s'>Delete</a>",$_GET['page'],'wp-custom-contact-form-delete',$item['id']),
 		);
 		return sprintf('%1$s %2$s',$item['firstname'],$this->row_actions($action));
-	}
-	
-	public function set_screen( $status, $option, $value ) {
-			echo 'hiii:';die();
-			if ( 'contact_per_page' == $option ) return $value;
-	}
-	
+	}	
 }
 ?>

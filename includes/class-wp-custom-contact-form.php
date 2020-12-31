@@ -164,12 +164,10 @@ class Wp_Custom_Contact_Form {
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 		$this->loader->add_action( 'admin_menu', $plugin_admin, 'wp_custom_contact_create_admin_menu' );
+		$this->loader->add_filter( 'set-screen-option', $plugin_admin, 'set_screen' , 10, 3);
+		$this->loader->add_action( 'wp_loaded', $plugin_admin, 'wp_custom_contact_page' );
 	}
 	
-	/*public function custom_contact_form(){
-		//require  'partials/wp-custom-contact-form-public-display.php';
-		require plugin_dir_path( __FILE__ )  . 'public/partials/wp-custom-contact-form-public-display.php';
-	}*/
 
 	/**
 	 * Register all of the hooks related to the public-facing functionality

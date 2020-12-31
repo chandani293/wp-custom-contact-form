@@ -106,14 +106,6 @@ class Wp_Custom_Contact_Form_Admin {
 	 */
 	public function wp_custom_contact_create_admin_menu() {
 		
-		/*add_menu_page(
-			__( 'WP Custom Contact Form', 'wp-custom-contact-form' ),
-			__( 'WP Custom Contact Form', 'wp-custom-contact-form' ),
-			'manage_options',
-			'wp-custom-contact-form-entries',
-			array( $this, 'wp_custom_contact_form_list' ),
-		);*/
-		
 		$hook = add_menu_page(
 			__( 'WP Custom Contact Form', 'wp-custom-contact-form' ),
 			__( 'WP Custom Contact Form', 'wp-custom-contact-form' ),
@@ -133,10 +125,10 @@ class Wp_Custom_Contact_Form_Admin {
 				 );
 		  add_screen_option( $option, $args );
 		}
-		add_filter('set-screen-option', 'set_screen', 10, 3);
-	    //function set_screen( $status, $option, $value ) {
-			//if ( 'contact_per_page' == $option ) return $value;
-		//}
+	}
+	
+	public function set_screen( $status, $option, $value ) {
+		if ( 'contact_per_page' == $option ) return $value;
 	}
 
 	/**
@@ -150,18 +142,44 @@ class Wp_Custom_Contact_Form_Admin {
 		$contact_form_list_table = new Wp_Custom_Contact_Form_Table();
 		echo '<h2>Contact Form List</h2>';
 		$contact_form_list_table->prepare_items();
-		$contact_form_list_table->display(); 
+		
 		echo "<form method='post' name='frm_search_post' action='".$_SERVER['PHP_SELF']."?page=wp-custom-contact-form-entries'>";
 		$contact_form_list_table->search_box("Search Data","search_post_id");
+		$contact_form_list_table->display(); 
 		echo "</form>";
 		
-		$action = isset($_GET['action']) ? trim($_GET['action']):"";
-	    if($action == 'wp-custom-contact-edit'){
-			$post_id = isset($_GET['post_id'])? trim($_GET['action']):"";
-			include_once plugin_dir_path(_FILE_).'admin//wp-custom-contact-edit.php';
-		}else{
-			$post_id = isset($_GET['post_id'])? trim($_GET['action']):"";
-			//include_once plugin_dir_path(_FILE_).'view/wp-custom-contact-delete.php';
+		
+	}
+	
+	/**
+	 * Check if page already available
+	 *
+	 * Return True/False Value
+	 */
+	public function wp_custom_contact_page_available( $page_slug ) {
+		$page = get_page_by_path( $page_slug, OBJECT );
+		if ( isset( $page ) ) {
+			return true;
+		} else {
+			return false;
+		}	
+	}
+	
+	/**
+	 * Create Contact Form Page Added Shortcode
+	 *
+	 */
+	public function wp_custom_contact_page() {
+
+		if ( ! $this->wp_custom_contact_page_available( 'wp-custom-contact-form' ) ) {
+			$default_page_details = array(
+				'post_title'   => 'WP Custom Contact Form',
+				'post_name'    => 'wp-custom-contact-form',
+				'post_type'    => 'page',
+				'post_content' => '[wp-custom-contact-form]',
+				'post_status'  => 'publish',	
+			);
+			wp_insert_post( $default_page_details );
 		}
 	}
 
