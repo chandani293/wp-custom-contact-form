@@ -14,7 +14,7 @@
  *
  * @wordpress-plugin
  * Plugin Name:       WP Custom Contact Form
- * Plugin URI:        https://github.com/chandani
+ * Plugin URI:        https://github.com/chandani293
  * Description:       Wordpress Custom Contact Form Form DataList, Bulk Delete, Edit, Search Using Ajax Option
  * Version:           1.0.0
  * Author:            Chandani Vadaria

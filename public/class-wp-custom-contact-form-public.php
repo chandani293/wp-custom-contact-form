@@ -112,24 +112,24 @@ class Wp_Custom_Contact_Form_Public {
 
 		$fromcontent = '';
 		$fromcontent .= '<div class="wp-custom-contact-form-main">';
-		$fromcontent .= '<form id="wpcustomcontactform" class="wp-custom-contact-form" method="post" action="">
+		$fromcontent .= '<form id="wpcustomcontactform" class="wp-custom-contact-form" method="post">
 						<div class="form-row">
 							<div class="form-group col-md-6">
-								<label class="control-label" for="firstname">' . __( 'First Name', 'wp-custom-contact-form' ) . '</label>
+								<label class="control-label" for="firstname">' . __( 'First Name*', 'wp-custom-contact-form' ) . '</label>
 								<input type="text" id="firstname" name="firstname" class="form-control" placeholder="Enter First Name" />
 							</div>
 							<div class="form-group col-md-6">
-								<label class="control-label" for="lastname">' . __( 'Last Name', 'wp-custom-contact-form' ) . '</label>
+								<label class="control-label" for="lastname">' . __( 'Last Name*', 'wp-custom-contact-form' ) . '</label>
 								<input type="text" id="lastname" name="lastname" class="form-control" placeholder="Enter Last Name" />
 							</div>
 						</div>
 						<div class="form-row">
 							<div class="form-group col-md-6">
-								<label class="control-label" for="email">' . __( 'Email', 'wp-custom-contact-form' ) . '</label>
+								<label class="control-label" for="email">' . __( 'Email*', 'wp-custom-contact-form' ) . '</label>
 								<input type="email" id="email" name="email" class="form-control"  placeholder="Enter Your Email" />
 							</div>
 							<div class="form-group col-md-6">
-								<label class="control-label" for="contact_no">' . __( 'Contact Number', 'wp-custom-contact-form' ) . '</label>
+								<label class="control-label" for="contact_no">' . __( 'Contact Number*', 'wp-custom-contact-form' ) . '</label>
 								<input type="text" id="contact_no" name="contact_no" class="form-control"  placeholder="Enter Contact Number" />
 							</div>
 						</div>	
@@ -139,6 +139,10 @@ class Wp_Custom_Contact_Form_Public {
 					  	</div>  
 						<div class="form-group">
 							<input type="submit" class="wp-custom-contact-from-submit" value="Submit">
+						</div>
+						<div class="loading_image" id="loading_image" style="display:none;">
+							<img src="'.plugin_dir_url( __FILE__ ) .'images/Loading_icon.gif" height="66" width="66">
+							Loading Please Wait...
 						</div>
 					</form>';
 		$fromcontent .= '</div>';
@@ -165,9 +169,9 @@ class Wp_Custom_Contact_Form_Public {
 					array(
 						'firstname'     => $firstname,
 						'lastname'      => $lastname,
-						'email'          => $email,
-						'contact_no' => $contact_no,
-						'message'        => $message,
+						'email'         => $email,
+						'contact_no' 	=> $contact_no,
+						'message'       => $message,
 					),
 					array(
 						'%s','%s','%s','%s','%s',

@@ -8,7 +8,9 @@
 } 
 .wp-custom-contact-form-success-msg{
 	border:2px solid green;
+	font-size:14px;
 }
 .wp-custom-contact-form-error-msg{
 	border:2px solid red;
+	font-size:14px;
 }

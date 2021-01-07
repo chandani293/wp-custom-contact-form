@@ -35,5 +35,7 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
  * Drop a custom database table wp_custom_contact_form
  */
 global $wpdb;
+ 
+$wp_custom_contact_form_table = WP_CUSTOM_CONTACT_FORM_TABLE;
 
-//$wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}wp_custom_contact_form");
+$wpdb->query("DROP TABLE IF EXISTS {$wp_custom_contact_form_table}");

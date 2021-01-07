@@ -24,7 +24,7 @@ $( document ).ready(function() {
 			var email                  = $( '#email' ).val();
 			var contact_no             = $( '#contact_no' ).val();
 			var message                = $( '#message' ).val();
-		
+			$(".loading_image").show();
 			$.ajax({
 				type: 'post',
 				dataType: 'json',
@@ -40,13 +40,15 @@ $( document ).ready(function() {
 				success: function (response ) {
 					if ( response.success ) {
 						$( '.wp-custom-contact-form-main' ).html( '<span class="wp-custom-contact-form-success-msg">' + response.success + '</span>' );
+						$(".loading_image").hide();
 					} else {
 						$( '.wp-custom-contact-form-main' ).html( '<span class="wp-custom-contact-form-error-msg">' + response.error + '</span>' );
+						$(".loading_image").hide();
 					}
 				}
 			});
 
-			return false;  // block the default submit action
+			//return false;  
 		}
 		
 	});

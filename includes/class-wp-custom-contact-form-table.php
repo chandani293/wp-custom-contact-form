@@ -33,8 +33,9 @@ class Wp_Custom_Contact_Form_Table extends WP_List_Table {
 	 */
 	public static function delete_data( $id ) {
 	  global $wpdb;
+	  $wp_custom_contact_form_table = WP_CUSTOM_CONTACT_FORM_TABLE;
 	  if ( ! empty( $id ) ) {
-		  $wpdb->query( "DELETE FROM {$wpdb->prefix}custom_contact_form WHERE id='".$id."'" );
+		  $wpdb->query( "DELETE FROM {$wp_custom_contact_form_table} WHERE id='".$id."'" );
 	  }
 	}
 	
@@ -71,8 +72,8 @@ class Wp_Custom_Contact_Form_Table extends WP_List_Table {
 		}
 	
 		
-        $per_page = $this->get_items_per_page('contact_per_page', 3); //3
-        $currentpage = $this->get_pagenum();//Get Current Page Number
+        $per_page = $this->get_items_per_page('contact_per_page', 3); 
+        $currentpage = $this->get_pagenum();
         $totalItems = count($data);
 
         $this->set_pagination_args( array(
@@ -96,16 +97,20 @@ class Wp_Custom_Contact_Form_Table extends WP_List_Table {
 	public function process_bulk_action() {
 		$entry_id = ( is_array( $_REQUEST['checked_value'] ) ) ? $_REQUEST['checked_value'] : array( $_REQUEST['checked_value'] );
 		global $wpdb;
+		$wp_custom_contact_form_table = WP_CUSTOM_CONTACT_FORM_TABLE;
 		
 		$action = $this->current_action();
-		if( 'delete' === $action ) {
+		if( 'delete' === $action  ) { //&& isset(	$entry_id )
 			foreach ( $entry_id as $id ) {
 				$id = absint( $id );
-				$wpdb->query( "DELETE FROM wp_custom_contact_form WHERE id=".$id."" );
+				$wpdb->query( "DELETE FROM {$wp_custom_contact_form_table} WHERE id=".$id."" );
 			}
 			
-			echo '<div class="notice notice-success is-dismissible"><p>Bulk Deleted..</p></div>';
-			//wp_redirect( admin_url() );
+			echo '<div class="notice notice-success is-dismissible"><p>Bulk Deleted...</p></div>';
+			
+			self::wp_redirect( esc_url( add_query_arg([]) ) );
+			exit;
+			
 		}
 		
 	}
@@ -148,7 +153,9 @@ class Wp_Custom_Contact_Form_Table extends WP_List_Table {
     public function get_sortable_columns()
     {
         return array(
-			'firstname' => array('firstname', true),
+			'id' => array('id', true),
+			'firstname' => array('firstname', false),
+			'lastname' => array('lastname', false),
 		);
     }
 
@@ -157,26 +164,23 @@ class Wp_Custom_Contact_Form_Table extends WP_List_Table {
      *
      * @return Array
      */
-    private function table_data( $orderby='',$order='',$search_term='' )
+    private function table_data( $orderby='id',$order='desc',$search_term='' )
     {
 		global $wpdb;
+		$wp_custom_contact_form_table = WP_CUSTOM_CONTACT_FORM_TABLE;
+		
+		$sql = "SELECT * FROM {$wp_custom_contact_form_table} where 1=1 ";
 		
 		if(!empty($search_term)){
-			 $sql = "SELECT * FROM {$wpdb->prefix}custom_contact_form where `firstname` LIKE '%$search_term%' OR `lastname` LIKE '%$search_term%' OR `email` LIKE '%$search_term%' OR `message` LIKE '%$search_term%'";
-			 $data = $wpdb->get_results($sql , 'ARRAY_A');
+			$sql .= " AND `firstname` LIKE '%$search_term%' OR `lastname` LIKE '%$search_term%' OR `email` LIKE '%$search_term%' OR `message` LIKE '%$search_term%' ";
 		}
-		else{
-			if($orderby == 'firstname' && $order == 'asc'){
-				$sql = "SELECT * FROM {$wpdb->prefix}custom_contact_form ORDER BY `firstname` ASC";
-				$data = $wpdb->get_results( $sql, 'ARRAY_A' );
-			}else if($orderby =='firstname' && $order == 'desc'){
-				$sql = "SELECT * FROM {$wpdb->prefix}custom_contact_form ORDER BY `firstname` DESC";
-				$data = $wpdb->get_results( $sql, 'ARRAY_A' );
-			}else{
-				$sql = "SELECT * FROM {$wpdb->prefix}custom_contact_form";
-				$data = $wpdb->get_results( $sql, 'ARRAY_A' );
-			}
+		
+		if(!empty($orderby) && !empty($order)){
+			$sql .= " ORDER BY $orderby $order ";
 		}
+		
+		$data = $wpdb->get_results( $sql, 'ARRAY_A' );	 
+		
 		return $data;
 	
     }
